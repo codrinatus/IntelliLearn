@@ -30,19 +30,26 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
         working-directory: ./api 
+
+
+          # Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18.15'  # Adjust based on your Node.js version
+
+      - name: Install frontend dependencies and build
+        run: |
+          npm install
+          npm run build
         
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
-
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v3
         with:
-          name: python-app
-          path: |
-            release.zip
-            !venv/
+          name: build
+          path: ./build
 
   deploy:
     runs-on: ubuntu-latest
@@ -57,12 +64,9 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
         with:
-          name: python-app
+          name: build
+          path: ./build
 
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
-
-      
       - name: Login to Azure
         uses: azure/login@v1
         with:
@@ -76,4 +80,5 @@ jobs:
         with:
           app-name: 'IntelliLearn'
           slot-name: 'Production'
+          package: ./build
           
