@@ -1,0 +1,9 @@
+langchain~=0.2.1
+DateTime~=5.5
+flask~=3.0.3
+flasgger~=0.9.7.1
+werkzeug~=3.0.3
+pyodbc~=5.1.0
+matplotlib~=3.9.0
+pytesseract~=0.3.10
+pillow~=10.3.0
