@@ -42,8 +42,6 @@ jobs:
           npm run build
         working-directory: ./frontend
 
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
 
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
@@ -52,7 +50,7 @@ jobs:
         with:
           name: python-app
           path: |
-            release.zip
+            ./frontend/build
             !venv/
 
           
@@ -70,9 +68,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: python-app
-
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
+          path: .
       
       - name: Login to Azure
         uses: azure/login@v1
