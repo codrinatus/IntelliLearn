@@ -21,7 +21,7 @@ JWT_SECRET_KEY = 'meow'
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'pdf'}
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../frontend/build', static_url_path='/')
 app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 bcrypt = Bcrypt(app)
@@ -56,6 +56,9 @@ def verify_token(f):
 
     return decorator
 
+@app.route('/')
+def serve():
+    return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/login', methods=['POST'])
 def auth():
