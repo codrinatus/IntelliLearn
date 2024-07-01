@@ -93,7 +93,7 @@ jobs:
         with:
           app-name: 'IntelliLearn-backend'
           slot-name: 'Production'
-          package: ./backend
+          package: ./
 
       - name: 'Deploy frontend to Azure Static Web Apps'
         uses: Azure/static-web-apps-deploy@v1
