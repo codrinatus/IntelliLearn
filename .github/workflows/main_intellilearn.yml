@@ -2,7 +2,7 @@
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 # More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
 
-name: Build and deploy Python and React app to Azure Web App - IntelliLearn
+name: Build and deploy Python app to Azure Web App - IntelliLearn
 
 on:
   push:
@@ -27,14 +27,14 @@ jobs:
           python -m venv venv
           source venv/bin/activate
       
-      - name: Install backend dependencies
+      - name: Install dependencies
         run: pip install -r requirements.txt
         working-directory: ./backend 
 
-      - name: Set up Node.js environment
+      - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '18.15' 
+          node-version: '18.15'
 
       - name: Install frontend dependencies and build
         run: |
@@ -42,44 +42,34 @@ jobs:
           npm run build
         working-directory: ./frontend
 
-      - name: Archive production-ready frontend
-        run: tar -czf frontend.tar.gz -C ./frontend/build .
-        shell: bash
+      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
-      - name: Archive backend
-        run: tar -czf backend.tar.gz -C ./backend .
-        shell: bash
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
-          path: |
-            frontend.tar.gz
-            backend.tar.gz
+          path: ./build
+
+          
   deploy:
     runs-on: ubuntu-latest
     needs: build
     environment:
       name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write 
+      id-token: write #This is required for requesting the JWT
 
     steps:
-      - name: Download artifacts from build job
-        uses: actions/download-artifact@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
         with:
           name: build-artifacts
-          path: ./
-
-      - name: Extract frontend artifact
-        run: tar -xzf frontend.tar.gz -C ./
-        shell: bash
-
-      - name: Extract backend artifact
-        run: tar -xzf backend.tar.gz -C ./
-        shell: bash
-
+          path: ./build
+      
       - name: Login to Azure
         uses: azure/login@v1
         with:
@@ -87,19 +77,10 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_A3C221E8C4604E6588690F2D74C5E44D }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_284BD3A2EC724E16823E93932FF21E3C }}
 
-      - name: 'Deploy backend to Azure Web App'
+      - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v2
-        id: deploy-backend
+        id: deploy-to-webapp
         with:
-          app-name: 'IntelliLearn-backend'
+          app-name: 'IntelliLearn'
           slot-name: 'Production'
           package: ./
-
-      - name: 'Deploy frontend to Azure Static Web Apps'
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action: "upload"
-          app_location: "frontend"
-          output_location: "frontend/build"
