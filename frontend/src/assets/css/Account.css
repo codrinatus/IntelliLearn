@@ -1,0 +1,56 @@
+.account-container {
+    padding: 20px;
+}
+
+.questions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+}
+
+.question-id {
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    font-weight: bold;
+}
+
+.question-id:hover {
+    opacity: 0.8;
+}
+
+.modal-content {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.modal-body {
+    color: white;
+    text-align: center;
+    padding: 20px;
+    font-size: 18px;
+}
+
+.modal-header {
+    border-bottom: none;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.modal-header .close {
+    font-size: 1.5rem;
+}
+
+.custom-modal .modal-dialog {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.custom-modal .modal-content {
+    max-width: 90vw;
+    margin: auto;
+}
