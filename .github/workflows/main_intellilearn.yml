@@ -53,7 +53,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build
-          path: ./build
+          path: ./
 
       - name: Ensure frontend directory exists
         run: mkdir -p ./frontend
