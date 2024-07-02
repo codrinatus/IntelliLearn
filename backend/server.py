@@ -20,8 +20,9 @@ from pdf_extractor import extract_text_and_images
 JWT_SECRET_KEY = 'meow'
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'pdf'}
+static_folder='../frontend/build'
 
-app = Flask(__name__, static_folder='../frontend/build', static_url_path='/')
+app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 bcrypt = Bcrypt(app)
@@ -55,9 +56,15 @@ def verify_token(f):
             return f(*args, **kwargs)
 
     return decorator
+    
+@app.route('/<path:path>')
+def serve_static(path):
+    return send_from_directory(static_folder, path)
 
-app = Flask(__name__, static_folder='../frontend/build')
-
+@app.route('/')
+def index():
+    return send_from_directory(static_folder, 'index.html')
+    
 @app.route('/login', methods=['POST'])
 def auth():
     data = request.get_json()
