@@ -23,7 +23,7 @@ jobs:
           python -m venv venv
           source venv/bin/activate
       
-      - name: Install dependencies
+      - name: Install backend dependencies
         run: pip install -r requirements.txt
         working-directory: ./backend 
 
@@ -38,16 +38,20 @@ jobs:
           npm run build
         working-directory: ./frontend
 
+      - name: Prepare artifact for deployment
+        run: |
+          mkdir -p release
+          cp -r backend/* release/
+          cp -r frontend/build/* release/
+
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v3
         with:
           name: python-app
-          path: |
-            ./backend
-            ./frontend/build/**
-            !venv/
+          path: release/
+          if-no-files-found: error
 
   deploy:
     runs-on: ubuntu-latest
@@ -64,12 +68,7 @@ jobs:
         with:
           name: python-app
           path: .
-
-      - name: Move frontend build files
-        run: |
-          mkdir -p release
-          mv frontend/build/* release/
-
+          
       - name: Login to Azure
         uses: azure/login@v1
         with:
