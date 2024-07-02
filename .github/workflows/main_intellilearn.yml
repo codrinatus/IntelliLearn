@@ -40,6 +40,7 @@ jobs:
         run: |
           npm install
           npm run build
+          ls
         working-directory: ./frontend
 
 
