@@ -56,14 +56,6 @@ def verify_token(f):
 
     return decorator
 
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def serve_react_app(path):
-    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
-        return send_from_directory(app.static_folder, path)
-    else:
-        return send_from_directory(app.static_folder, 'index.html')
-
 app = Flask(__name__, static_folder='../frontend/build')
 
 @app.route('/login', methods=['POST'])
@@ -252,7 +244,13 @@ def account():
     conn.close()
     return jsonify(response)
 
-
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_react_app(path):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 port = int(os.environ.get('PORT', 3001))
 app.run(host='0.0.0.0', port=port)
