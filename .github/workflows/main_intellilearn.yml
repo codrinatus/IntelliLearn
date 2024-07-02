@@ -82,4 +82,3 @@ jobs:
         with:
           app-name: 'IntelliLearn'
           slot-name: 'Production'
-          package: ./release
