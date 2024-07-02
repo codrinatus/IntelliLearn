@@ -1,7 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
-
 name: Build and deploy Python app to Azure Web App - IntelliLearn
 
 on:
@@ -40,9 +36,7 @@ jobs:
         run: |
           npm install
           npm run build
-          ls
         working-directory: ./frontend
-
 
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
@@ -51,10 +45,10 @@ jobs:
         with:
           name: python-app
           path: |
-            ./frontend/build
+            ./backend
+            ./frontend/build/**
             !venv/
 
-          
   deploy:
     runs-on: ubuntu-latest
     needs: build
@@ -62,7 +56,7 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
+      id-token: write # This is required for requesting the JWT
 
     steps:
       - name: Download artifact from build job
@@ -70,13 +64,18 @@ jobs:
         with:
           name: python-app
           path: .
-      
+
+      - name: Move frontend build files
+        run: |
+          mkdir -p release
+          mv frontend/build/* release/
+
       - name: Login to Azure
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_FF6B96C61F9748A1855FA45103E98D2D }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_A3C221E8C4604E6588690F2D74C5E44D }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_284BD3A2EC724E16823E93932FF21E3C }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v2
@@ -84,3 +83,4 @@ jobs:
         with:
           app-name: 'IntelliLearn'
           slot-name: 'Production'
+          package: ./release
