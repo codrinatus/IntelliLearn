@@ -21,7 +21,7 @@ function Quiz() {
     const [isResult, setIsResult] = useState(false);
 
     useEffect(() => {
-        axios.get(`http://localhost:3001/quiz/${level}`, {
+        axios.get(`${process.env.REACT_APP_BACKEND_URL}/quiz/${level}`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`
             }
