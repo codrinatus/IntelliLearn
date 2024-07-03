@@ -9,6 +9,7 @@ const Login = ({onLoginSuccess, onAdminVerification}) => {
     const navigate = useNavigate();
 
     const handleLogin = async () => {
+        console.log('Backend URL:', process.env.REACT_APP_BACKEND_URL);
         try {
             const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/login`, {
                 method: 'POST',
