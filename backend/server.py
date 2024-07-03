@@ -27,7 +27,7 @@ def find_static_folder():
             return os.path.join(root, 'static')
     return None
 
-STATIC_FOLDER = find_static_folder()
+STATIC_FOLDER = './static'
 
 app = Flask(__name__, static_folder=STATIC_FOLDER)
 app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
