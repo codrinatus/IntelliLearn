@@ -10,7 +10,7 @@ const Login = ({onLoginSuccess, onAdminVerification}) => {
 
     const handleLogin = async () => {
         try {
-            const response = await fetch('http://localhost:3001/login', {
+            const response = await fetch('${process.env.REACT_APP_BACKEND_URL}/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
