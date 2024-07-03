@@ -63,15 +63,21 @@ def serve_index():
 @app.route('/debug-files')
 def debug_files():
     directory = app.static_folder
-    files_and_dirs = []
 
-    for root, dirs, files in os.walk(directory):
-        files_and_dirs.append(f"Directory: {root}")
-        for dir_name in dirs:
-            files_and_dirs.append(f"Sub-directory: {os.path.join(root, dir_name)}")
-        for file_name in files:
-            files_and_dirs.append(f"File: {os.path.join(root, file_name)}")
+    def get_file_structure(path):
+        structure = []
+        for root, dirs, files in os.walk(path):
+            relative_root = os.path.relpath(root, directory)
+            if relative_root == '.':
+                relative_root = ''
+            for dir_name in dirs:
+                structure.append(f"Directory: {os.path.join(relative_root, dir_name)}")
+            for file_name in files:
+                structure.append(f"File: {os.path.join(relative_root, file_name)}")
+        return structure
 
+    file_structure = get_file_structure(directory)
+    return jsonify(file_structure)
     return jsonify(files_and_dirs)
     
 @app.route('/login', methods=['POST'])
