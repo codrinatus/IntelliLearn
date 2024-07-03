@@ -22,7 +22,7 @@ UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'pdf'}
 static_folder='../frontend/build'
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 bcrypt = Bcrypt(app)
@@ -56,15 +56,11 @@ def verify_token(f):
             return f(*args, **kwargs)
 
     return decorator
-    
-@app.route('/<path:path>')
-def serve_static(path):
-    return send_from_directory(static_folder, path)
 
 @app.route('/')
-def index():
-    return send_from_directory(static_folder, 'index.html')
-
+def serve_index():
+    return send_from_directory(app.static_folder, 'index.html')
+    
 @app.route('/debug-files')
 def debug_files():
     directory = app.static_folder
