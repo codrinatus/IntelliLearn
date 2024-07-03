@@ -13,7 +13,7 @@ const Account = () => {
     useEffect(() => {
         const fetchAccountData = async () => {
             try {
-                const response = await axios.get('http://localhost:3001/account', {
+                const response = await axios.get('${process.env.REACT_APP_BACKEND_URL}/account', {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }
