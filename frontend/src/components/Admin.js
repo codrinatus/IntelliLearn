@@ -23,7 +23,7 @@ const Admin = () => {
 
         try {
             setUploadStatus('Uploading...');
-            const response = await fetch('http://localhost:3001/upload', {
+            const response = await fetch('${process.env.REACT_APP_BACKEND_URL}/upload', {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
