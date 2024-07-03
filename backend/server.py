@@ -68,16 +68,16 @@ def index():
 @app.route('/debug-files')
 def debug_files():
     directory = app.static_folder
+    files_and_dirs = []
 
-    # Walk through the directory tree and log all files and directories
     for root, dirs, files in os.walk(directory):
-        print(f"Directory: {root}")
+        files_and_dirs.append(f"Directory: {root}")
         for dir_name in dirs:
-            print(f"Sub-directory: {os.path.join(root, dir_name)}")
+            files_and_dirs.append(f"Sub-directory: {os.path.join(root, dir_name)}")
         for file_name in files:
-            print(f"File: {os.path.join(root, file_name)}")
-    
-    return "Check logs for file and directory structure."
+            files_and_dirs.append(f"File: {os.path.join(root, file_name)}")
+
+    return jsonify(files_and_dirs)
     
 @app.route('/login', methods=['POST'])
 def auth():
