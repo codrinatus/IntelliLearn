@@ -21,7 +21,15 @@ JWT_SECRET_KEY = 'meow'
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'pdf'}
 
-app = Flask(__name__, static_folder='static')
+def find_static_folder():
+    for root, dirs, files in os.walk('/tmp'):
+        if 'static' in dirs:
+            return os.path.join(root, 'static')
+    return None
+
+STATIC_FOLDER = find_static_folder()
+
+app = Flask(__name__, static_folder=STATIC_FOLDER)
 app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 bcrypt = Bcrypt(app)
