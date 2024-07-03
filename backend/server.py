@@ -64,6 +64,20 @@ def serve_static(path):
 @app.route('/')
 def index():
     return send_from_directory(static_folder, 'index.html')
+
+@app.route('/debug-files')
+def debug_files():
+    directory = app.static_folder
+
+    # Walk through the directory tree and log all files and directories
+    for root, dirs, files in os.walk(directory):
+        print(f"Directory: {root}")
+        for dir_name in dirs:
+            print(f"Sub-directory: {os.path.join(root, dir_name)}")
+        for file_name in files:
+            print(f"File: {os.path.join(root, file_name)}")
+    
+    return "Check logs for file and directory structure."
     
 @app.route('/login', methods=['POST'])
 def auth():
