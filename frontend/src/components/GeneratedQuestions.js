@@ -27,7 +27,7 @@ function GeneratedQuestions() {
 
     const handleSubmit = () => {
         const selectedQuestionObjects = selectedQuestions.map(index => editableQuestions[index]);
-        axios.post('http://localhost:3001/insert-questions', selectedQuestionObjects, {
+        axios.post('${process.env.REACT_APP_BACKEND_URL}/insert-questions', selectedQuestionObjects, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`
             }
