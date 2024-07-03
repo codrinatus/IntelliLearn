@@ -20,7 +20,6 @@ from pdf_extractor import extract_text_and_images
 JWT_SECRET_KEY = 'meow'
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'pdf'}
-static_folder='../frontend/build'
 
 app = Flask(__name__, static_folder='static')
 app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
