@@ -1,7 +1,7 @@
 import pyodbc
 
-SERVER = 'tcp:intellilearndb.database.windows.net'
-DATABASE = 'intellilearn'
+SERVER = 'tcp:intellilearnserver.database.windows.net'
+DATABASE = 'intellilearndb'
 USERNAME = 'intellilearn'
 PASSWORD = 'Learningtime5'
 
