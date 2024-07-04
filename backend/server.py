@@ -282,5 +282,5 @@ def serve_react_app(path):
     else:
         return send_from_directory(app.static_folder, 'index.html')
 
-port = int(os.environ.get('PORT', 80))
+port = int(os.environ.get('PORT', 8080))
 app.run(host='0.0.0.0', port=port)
