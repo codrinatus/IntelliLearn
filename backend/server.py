@@ -34,7 +34,7 @@ app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+CORS(app, resources={r"/*": {"origins": "http://localhost:80"}})
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -242,7 +242,7 @@ def account():
     question_ids_with_status = [stat['question_id'] for stat in user_stats if stat['status'] > 0]
 
     if question_ids_with_status:
-        # Get details for questions with status > 0
+        # getting details for questions with status > 0
         format_strings = ','.join(['?'] * len(question_ids_with_status))
         print(format_strings)
         query = f" SELECT * FROM SD WHERE question_id IN ({format_strings})"
@@ -250,7 +250,7 @@ def account():
         questions = cursor.fetchall()
         columns = [column[0] for column in cursor.description]
 
-        # Convert fetched questions to a dictionary
+        # converting fetched questions to dictionaruy
         questions_dict = {
             question[columns.index('question_id')]: {
                 'question_id': question[columns.index('question_id')],
@@ -282,5 +282,5 @@ def serve_react_app(path):
     else:
         return send_from_directory(app.static_folder, 'index.html')
 
-port = int(os.environ.get('PORT', 8000))
+port = int(os.environ.get('PORT', 80))
 app.run(host='0.0.0.0', port=port)
