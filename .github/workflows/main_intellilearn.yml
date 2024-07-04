@@ -1,3 +1,7 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
+
 name: Build and deploy Python app to Azure Web App - IntelliLearn
 
 on:
@@ -23,37 +27,21 @@ jobs:
           python -m venv venv
           source venv/bin/activate
       
-      - name: Install backend dependencies
+      - name: Install dependencies
         run: pip install -r requirements.txt
-        working-directory: ./backend 
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '18.15'
-
-      - name: Install frontend dependencies and build
-        run: |
-          npm install
-          npm run build
-        working-directory: ./frontend
-        env:
-          REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
-
-      - name: Prepare artifact for deployment
-        run: |
-          mkdir -p release
-          cp -r backend/* release/
-          cp -r frontend/build/* release/
-
+        
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
+
+      - name: Zip artifact for deployment
+        run: zip release.zip ./* -r
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v3
         with:
           name: python-app
-          path: release/
-          if-no-files-found: error
+          path: |
+            release.zip
+            !venv/
 
   deploy:
     runs-on: ubuntu-latest
@@ -62,21 +50,24 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write # This is required for requesting the JWT
+      id-token: write #This is required for requesting the JWT
 
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
         with:
           name: python-app
-          path: .
-          
+
+      - name: Unzip artifact for deployment
+        run: unzip release.zip
+
+      
       - name: Login to Azure
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_FF6B96C61F9748A1855FA45103E98D2D }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_A3C221E8C4604E6588690F2D74C5E44D }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_284BD3A2EC724E16823E93932FF21E3C }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_0D3201D692D842E7BEBE64C8820B7FBB }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B2537433A31F4A20A411C7BAF4C2BC60 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7462D589C0DA4EC1963406298C64F21B }}
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v2
@@ -84,3 +75,4 @@ jobs:
         with:
           app-name: 'IntelliLearn'
           slot-name: 'Production'
+          
