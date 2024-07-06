@@ -43,14 +43,6 @@ if not os.path.exists(UPLOAD_FOLDER):
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
-# cursor.execute('SELECT * FROM questions')
-#
-# column_names = cursor.description
-#
-# for column in column_names:
-#     print(column[0])
-
 def verify_token(f):
     @wraps(f)
     def decorator(*args, **kwargs):
@@ -137,21 +129,92 @@ def register():
     return jsonify(message='User registered successfully'), 201
 
 
+def select_questions_based_on_score(cursor, level, user_stats, score):
+    if score == 0:
+        # First quiz(new user/topic)
+        difficulty_weights = {'easy': 1, 'medium': 1, 'hard': 1}
+    elif score < 60:  # Beginner
+        difficulty_weights = {'easy': 2, 'medium': 1, 'hard': 0}
+    elif score < 150:  # Intermediate
+        difficulty_weights = {'easy': 1, 'medium': 2, 'hard': 1}
+    elif score < 240:  # Advanced
+        difficulty_weights = {'easy': 0, 'medium': 2, 'hard': 2}
+    else:  # Master
+        difficulty_weights = {'easy': 0, 'medium': 1, 'hard': 3}
+
+    answered_questions = [stat['question_id'] for stat in user_stats if stat['status'] == 2]
+    if answered_questions:
+        placeholders = ','.join(['?'] * len(answered_questions))
+        query = f"SELECT * FROM {level} WHERE question_id NOT IN ({placeholders})"
+        cursor.execute(query, answered_questions)
+    else:
+        query = f"SELECT * FROM {level}"
+        cursor.execute(query)
+
+    questions = cursor.fetchall()
+    columns = [column[0] for column in cursor.description]
+
+    easy_questions = [dict(zip(columns, q)) for q in questions if q[columns.index('difficulty')] == 'easy']
+    medium_questions = [dict(zip(columns, q)) for q in questions if q[columns.index('difficulty')] == 'medium']
+    hard_questions = [dict(zip(columns, q)) for q in questions if q[columns.index('difficulty')] == 'hard']
+
+    selected_questions = []
+    total_weight = sum(difficulty_weights.values())
+    num_questions = 10
+
+    while len(selected_questions) < num_questions and total_weight > 0:
+        if not easy_questions:
+            difficulty_weights['easy'] = 0
+        if not medium_questions:
+            difficulty_weights['medium'] = 0
+        if not hard_questions:
+            difficulty_weights['hard'] = 0
+
+        total_weight = sum(difficulty_weights.values())
+        if total_weight == 0:
+            break
+
+        choice = random.choices(
+            population=['easy', 'medium', 'hard'],
+            weights=[difficulty_weights['easy'], difficulty_weights['medium'], difficulty_weights['hard']],
+            k=1
+        )[0]
+
+        if choice == 'easy' and easy_questions:
+            selected_questions.append(easy_questions.pop())
+        elif choice == 'medium' and medium_questions:
+            selected_questions.append(medium_questions.pop())
+        elif choice == 'hard' and hard_questions:
+            selected_questions.append(hard_questions.pop())
+
+        if len(selected_questions) < num_questions:
+            remaining_questions = easy_questions + medium_questions + hard_questions
+            selected_questions.extend(random.sample(remaining_questions, min(num_questions - len(selected_questions),
+                                                                             len(remaining_questions))))
+
+    return selected_questions
+
+
 @app.route('/quiz/<level>', methods=['GET'])
 @jwt_required()
 def get_questions(level):
     logging.info(f"Fetching questions for level: {level}")
     logging.basicConfig(level=logging.DEBUG)
+    username = get_jwt_identity()['username']
+
     conn = database.connect()
     cursor = conn.cursor()
-    query = f"SELECT * FROM {level}"
-    cursor.execute(query)
-    questions = cursor.fetchall()
-    columns = [column[0] for column in cursor.description]
-    question_list = [dict(zip(columns, question)) for question in questions]
-    print(question_list)
+    cursor.execute("SELECT stats, score FROM users WHERE username = ?", (username,))
+    user = cursor.fetchone()
+
+    user_stats = json.loads(user[0]) if user[0] else []
+    score = user[1] if user[1] else 0
+
+    questions = select_questions_based_on_score(cursor, level, user_stats, score)
+
     conn.close()
-    return jsonify(question_list)
+
+    return jsonify(questions)
 
 
 @app.route('/upload', methods=['POST'])
@@ -201,19 +264,29 @@ def update_question_stats():
 
     conn = database.connect()
     cursor = conn.cursor()
-    cursor.execute("SELECT stats FROM Users WHERE username = ?", (username,))
+    cursor.execute("SELECT stats, score FROM Users WHERE username = ?", (username,))
     user = cursor.fetchone()
-    existing_question_stats = json.loads(user.stats) if user.stats else []
+    existing_question_stats = json.loads(user[0]) if user[0] else []
+    current_score = user[1] if user[1] else 0
 
     question_stats_dict = {stat['question_id']: stat for stat in existing_question_stats}
     for stat in question_stats_update:
         question_stats_dict[stat['question_id']] = stat
+        print(stat)
 
     updated_question_stats = list(question_stats_dict.values())
     print("Updated question stats:", updated_question_stats)
 
-    cursor.execute("UPDATE Users SET stats = ? WHERE username = ?",
-                   (json.dumps(updated_question_stats), username))
+    new_score = current_score
+    points = {'easy': 2, 'medium': 4, 'hard': 8}
+
+    for stat in question_stats_update:
+        if stat['status'] == 2:
+            new_score += points[stat['difficulty']]
+
+
+    cursor.execute("UPDATE users SET stats = ?, score = ? WHERE username = ?",
+                   (json.dumps(updated_question_stats), new_score, username))
     conn.commit()
     conn.close()
 
@@ -228,7 +301,7 @@ def account():
     conn = database.connect()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT stats FROM Users WHERE username = ?", (username,))
+    cursor.execute("SELECT stats,score FROM Users WHERE username = ?", (username,))
     user = cursor.fetchone()
     if user:
         user_dict = dict(zip([desc[0] for desc in cursor.description], user))
@@ -242,7 +315,6 @@ def account():
     question_ids_with_status = [stat['question_id'] for stat in user_stats if stat['status'] > 0]
 
     if question_ids_with_status:
-        # getting details for questions with status > 0
         format_strings = ','.join(['?'] * len(question_ids_with_status))
         print(format_strings)
         query = f" SELECT * FROM SD WHERE question_id IN ({format_strings})"
@@ -250,7 +322,6 @@ def account():
         questions = cursor.fetchall()
         columns = [column[0] for column in cursor.description]
 
-        # converting fetched questions to dictionaruy
         questions_dict = {
             question[columns.index('question_id')]: {
                 'question_id': question[columns.index('question_id')],
@@ -266,6 +337,8 @@ def account():
     last_question_id = cursor.execute("SELECT MAX(question_id) FROM SD").fetchone()[0]
 
     response = {
+        'username': username,
+        'score': user_dict['score'],
         'questions': questions_dict,
         'user_stats': user_stats,
         'last_question_id': last_question_id
@@ -273,7 +346,7 @@ def account():
 
     conn.close()
     return jsonify(response)
-
+    
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_react_app(path):
