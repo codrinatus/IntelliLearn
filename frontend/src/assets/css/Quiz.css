@@ -5,8 +5,11 @@
     padding: 1.5rem;
     background-color: var(--bg-color);
     border-radius: 1rem;
-    height: calc(100vh - 4rem);
-    overflow: scroll;
+    min-height: calc(100vh - 4rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
 }
 
 .progress-container {
@@ -184,6 +187,8 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
     margin-top: 2rem;
+    flex-grow: 1; 
+    padding-bottom: 5rem;
 }
 
 .answer-label {

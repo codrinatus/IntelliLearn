@@ -8,12 +8,6 @@
     font-family: "Inter", sans-serif;
 }
 
-html, body {
-    overflow: hidden;
-    /*width: 100%;*/
-    height: 100%;
-}
-
 :root {
     --first-color: #9B01CA;
     --opacity-first: #7F229B;
@@ -27,15 +21,22 @@ html, body {
     --value: attr(data-value);
 }
 
-.app-container {
-    width: 100%;
+html, body {
     height: 100%;
-    padding: 2rem 1rem;
-    background-color: var(--body-bg);
+    width: 100%;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+.app-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 2rem 1rem;
+    background-color: var(--body-bg);
+    overflow: hidden; /* Prevent scroll bars */
 }
 
 .error-link {
