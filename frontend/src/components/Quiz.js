@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from 'axios';
-// axios.defaults.baseUrl = "http://localhost:3001/"
 
 function Quiz() {
     const { level } = useParams();
