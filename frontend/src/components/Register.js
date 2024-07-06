@@ -37,14 +37,15 @@ const Register = ({ toggleForm }) => {
 
     return (
         <div className="container">
-            <h1>Register</h1>
+            <h1 className="title">IntelliLearn</h1>
+            <h2>Register</h2>
             <form className="form" onSubmit={handleSubmit}>
                 <input className="input" type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
                 <input className="input" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
                 <button className="button" type="submit">Register</button>
             </form>
             {registrationMessage && <p>{registrationMessage}</p>}
-            <button className="toggle-button" onClick={() => navigate('/login')}>Go to Login</button> {}
+            <button className="toggle-button" onClick={() => navigate('/login')}>Go to Login</button>
         </div>
     );
 };
