@@ -35,8 +35,7 @@ function Quiz() {
             });
     }, [level]);
 
-
-    const selectAnswer = (index) => {
+const selectAnswer = (index) => {
         if (currentQuestion === questions.length - 1) {
             setIsNextButton(false);
             setIsResultButton(true);
@@ -46,26 +45,31 @@ function Quiz() {
         setSelectedIndex(index);
     };
 
-    const nextQuestion = async (index) => {
-        if (currentQuestion >= questions.length - 1) {
-            addAnswer(index);
-            setCurrentQuestion(0);
-            setIsResult(true);
-            console.log(questionStats)
-            await updateQuestionStats(questionStats);
-        } else {
-            setTime(30);
-            setIsNextButton(false);
-            addAnswer(index);
-            setCurrentQuestion(currentQuestion + 1);
-            setSelectedIndex();
-        }
+    const addAnswer = (index) => {
+        const selectedAnswer = {
+            answer: questions[currentQuestion][`choice${String.fromCharCode(65 + index)}`],
+            trueAnswer: questions[currentQuestion].correctchoiceletter === String.fromCharCode(65 + index)
+        };
+        console.log("Adding answer: ", selectedAnswer);
+        const newAnswers = [...selectedAnswers, selectedAnswer];
+        console.log("Updated answers array: ", newAnswers);
+        setSelectedAnswers(newAnswers);
+        const questionId = questions[currentQuestion].question_id;
+        const questionDiff = questions[currentQuestion].difficulty;
+        const status = index != null && questions[currentQuestion].correctchoiceletter === String.fromCharCode(65 + index);
+        const newStat = {
+            question_id: questionId,
+            status: status === true ? 2 : 1,
+            difficulty: questionDiff
+        };
+        setQuestionStats((prevStats) => [...prevStats, newStat]);
+        console.log(newStat);
     };
 
     const updateQuestionStats = async (stats) => {
         const token = localStorage.getItem('token');
         try {
-            await axios.post('http://localhost:3001/updatestats', {
+            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/updatestats`, {
                 question_stats: stats
             }, {
                 headers: {
@@ -77,26 +81,25 @@ function Quiz() {
         }
     };
 
-    const addAnswer = (index) => {
-        const selectedAnswer = {
-            answer: questions[currentQuestion][`choice${String.fromCharCode(65 + index)}`],
-            trueAnswer: questions[currentQuestion].correctchoiceletter === String.fromCharCode(65 + index)
-        };
-        console.log("Adding answer: ", selectedAnswer);
-        const newAnswers = [...selectedAnswers, selectedAnswer];
-        console.log("Updated answers array: ", newAnswers); // Debugging log
-        setSelectedAnswers(newAnswers);
-        const questionId = questions[currentQuestion].question_id
-        const questionDiff = questions[currentQuestion].difficulty
-        const status = index != null && questions[currentQuestion].correctchoiceletter === String.fromCharCode(65 + index)
-        const newStat = {
-            question_id:questionId,
-            status: status === true ? 2:1,
-            difficulty: questionDiff
+    const nextQuestion = useCallback(async (index) => {
+        if (currentQuestion >= questions.length - 1) {
+            addAnswer(index);
+            setCurrentQuestion(0);
+            setIsResult(true);
+            console.log(questionStats);
+            await updateQuestionStats([...questionStats, { //making sure to update the last question also
+                question_id: questions[currentQuestion].question_id,
+                status: questions[currentQuestion].correctchoiceletter === String.fromCharCode(65 + index) ? 2 : 1,
+                difficulty: questions[currentQuestion].difficulty
+            }]);
+        } else {
+            setTime(30);
+            setIsNextButton(false);
+            addAnswer(index);
+            setCurrentQuestion(currentQuestion + 1);
+            setSelectedIndex();
         }
-        setQuestionStats((prevStats) => [...prevStats, newStat]);
-        console.log(newStat);
-    };
+    }, [currentQuestion, questions, questionStats]);
 
     const handleSeeResults = () => {
         navigate("/result", {
@@ -107,7 +110,6 @@ function Quiz() {
         });
     };
 
-
     useEffect(() => {
         const timer = setInterval(() => {
             setTime((prevTime) => prevTime - 1);
@@ -117,7 +119,7 @@ function Quiz() {
             nextQuestion(null);
         }
         return () => clearInterval(timer);
-    }, [time]);
+    }, [time, nextQuestion]);
 
     if (!questions || questions.length === 0) {
         return <div>Loading...</div>;
@@ -169,7 +171,7 @@ function Quiz() {
                     className="progress-circle time"
                     aria-valuemin="0"
                     aria-valuemax="100"
-                    style={{ "--value": (time / 30) * 100 }}
+                    style={{"--value": (time / 30) * 100}}
                 >
                     <span className="time">{time}</span>
                 </div>
@@ -184,7 +186,7 @@ function Quiz() {
                         className={selectedIndex === index ? "answer-label selected" : "answer-label"}
                     >
                         {questions[currentQuestion][key]}
-                        <input type="radio" name="answer" id={index} />
+                        <input type="radio" name="answer" id={index}/>
                     </label>
                 ))}
             </div>
@@ -232,3 +234,4 @@ function Quiz() {
 }
 
 export default Quiz;
+
