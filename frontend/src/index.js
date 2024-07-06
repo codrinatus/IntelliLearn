@@ -8,6 +8,7 @@ import './assets/css/Quiz.css'
 import './assets/css/Result.css'
 import './assets/css/GeneratedQuestions.css'
 import './assets/css/Account.css'
+import './assets/css/Admin.css'
 import {BrowserRouter as Router} from "react-router-dom";
 
 
