@@ -43,7 +43,8 @@ const Login = ({onLoginSuccess, onAdminVerification}) => {
 
     return (
         <div className="container">
-            <h1>Login</h1>
+            <h1 className="title">IntelliLearn</h1>
+            <h2>Login</h2>
             <form className="form" onSubmit={(e) => {
                 e.preventDefault();
                 handleLogin();
@@ -53,7 +54,6 @@ const Login = ({onLoginSuccess, onAdminVerification}) => {
                 <input className="input" type="password" placeholder="Password" value={password}
                        onChange={(e) => setPassword(e.target.value)}/>
                 <button className="button" type="submit">Connect</button>
-                {/*<button className="button" type="button" onClick={redirectToSwaggerUI}>Go to Swagger UI</button>*/}
             </form>
             {loginError && <p>{loginError}</p>}
             <button className="toggle-button" onClick={() => navigate('/register')}>
