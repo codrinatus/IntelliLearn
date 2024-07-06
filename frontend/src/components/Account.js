@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Modal } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+
 
 const Account = () => {
     const [questions, setQuestions] = useState({});
@@ -9,6 +11,11 @@ const Account = () => {
     const [selectedQuestion, setSelectedQuestion] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState(0);
+    const [username, setUsername] = useState('');
+    const [score, setScore] = useState(0);
+    const [status, setStatus] = useState('');
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchAccountData = async () => {
