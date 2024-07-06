@@ -14,7 +14,7 @@ const Account = () => {
         const fetchAccountData = async () => {
             try {
                 const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/account`, {
-                    headers: {
+                  headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }
                 });
@@ -22,6 +22,10 @@ const Account = () => {
                 setQuestions(response.data.questions);
                 setUserStats(response.data.user_stats);
                 setQuestioNR(response.data.last_question_id);
+                setUsername(response.data.username);
+                setScore(response.data.score);
+                setStatus(calculateStatus(response.data.score));
+                setLoading(false);
             } catch (error) {
                 console.error('Error fetching account data:', error);
             }
@@ -29,6 +33,14 @@ const Account = () => {
 
         fetchAccountData();
     }, []);
+
+       const calculateStatus = (score) => {
+        if (score === 0) return 'Noob';
+        if (score < 60) return 'Beginner';
+        if (score < 150) return 'Intermediate';
+        if (score < 240) return 'Advanced';
+        return 'Master';
+    };
 
     const getStatus = (questionId) => {
         const stat = userStats.find(stat => stat.question_id === questionId);
@@ -55,9 +67,26 @@ const Account = () => {
         }
     };
 
+    if (loading) {
+        return (
+            <div className="loader-container">
+                <div className="loader"></div>
+            </div>
+        );
+    }
+
     return (
         <div className="account-container">
-            <h1>Account Page</h1>
+            <div className="account-header">
+                <button className="back-button" onClick={() => navigate(-1)}>
+                    &larr; Back
+                </button>
+                <h1 className="account-title">Account Page</h1>
+            </div>
+            <div className="user-info">
+                <p><strong>Username:</strong> {username}</p>
+                <p><strong>Status:</strong> {status}</p>
+            </div>
             <div className="questions-grid">
                 {Array.from({ length: questioNR }, (_, i) => i + 1).map(questionId => {
                     const question = questions[questionId] || {};
@@ -76,12 +105,7 @@ const Account = () => {
             </div>
 
             <Modal show={showModal} onHide={() => setShowModal(false)} centered className="custom-modal">
-                <div
-                    className="modal-content"
-                    style={{
-                        backgroundColor: selectedQuestion ? getColor(getStatus(selectedQuestion.question_id), selectedQuestion.difficulty) : 'white'
-                    }}
-                >
+                <div className="modal-content">
                     <div className="modal-header">
                         <button type="button" className="close" onClick={() => setShowModal(false)}>
                             &times;
@@ -102,3 +126,4 @@ const Account = () => {
 };
 
 export default Account;
+
